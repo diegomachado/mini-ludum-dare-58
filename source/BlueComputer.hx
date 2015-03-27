@@ -9,7 +9,7 @@ import flixel.util.FlxMath;
 import flixel.util.FlxRandom;
 import flixel.util.FlxTimer;
 
-class Enemy extends FlxGroup
+class BlueComputer extends FlxGroup
 {
 	private static inline var MOVE_SPEED:Float = 400;
 	private static inline var ATTACK_DURATION:Float = 0.3;
@@ -100,11 +100,11 @@ class Enemy extends FlxGroup
 			    		ball.reboundVertically();
 			    	
 			    	ball.reboundHorizontally(attackPower);
+
+			    	Signals.ballHitSignal.dispatch(ball);
 		    	}
 			}
 		}
-
-		// FlxG.collide(this, ball);
 
 	    super.update();
 		

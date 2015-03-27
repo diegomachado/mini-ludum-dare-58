@@ -1,14 +1,12 @@
 package;
 
-import flixel.util.FlxSave;
+import flixel.util.FlxSignal;
 
-/**
- * Handy, pre-built Registry class that can be used to store 
- * references to objects and other things for quick-access. Feel
- * free to simply ignore it or change it in any way you like.
- */
 class Reg
 {
+	public static var is2Players:Bool = false;
+
+	public static inline var WIN_SCORE:Int = 10;
 	public static var scoreBoardFont = "assets/data/ozone.ttf";
 
 	public static var hitSounds:Array<String> = ["assets/sounds/hit1.wav",

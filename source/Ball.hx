@@ -6,14 +6,18 @@ import flixel.util.FlxColor;
 import flixel.util.FlxPoint;
 import flixel.util.FlxMath;
 import flixel.util.FlxRandom;
+import flixel.util.FlxSignal;
 
 class Ball extends FlxSprite
 {
 	private static inline var MOVE_SPEED:Float = 250;
+	public var playState:PlayState;
 
-	function new(x:Float, y:Float)
+	function new(x:Float, y:Float, state:PlayState)
 	{
 		super(x, y);
+
+		playState = state;
 
 		loadRotatedGraphic("assets/images/ball.png", 16);
 		animation.add("spinRight", [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], 20, true);
@@ -49,13 +53,33 @@ class Ball extends FlxSprite
 
 			if(x <= 20)
 			{
-				Reg.scores[1]++;
-	    		FlxG.camera.flash(FlxColor.BLUE, 0.05);
+				if(Reg.scores[1] == Reg.WIN_SCORE - 1)
+				{
+					playState.blueWin();
+					velocity.set(0, 0);
+					x = FlxG.width / 2 - width / 2;
+					y = FlxG.height / 2 - height / 2 - 20;
+				}
+				else
+				{
+					Reg.scores[1]++;
+	    			FlxG.camera.flash(FlxColor.BLUE, 0.05);
+				}
 			}
-			if((x + width) >= (FlxG.width - 20))
+			else if((x + width) >= (FlxG.width - 20))
 			{
-				Reg.scores[0]++;
-	    		FlxG.camera.flash(FlxColor.RED, 0.05);
+				if(Reg.scores[0] == Reg.WIN_SCORE - 1)
+				{
+					playState.redWin();
+					velocity.set(0,0);
+					x = FlxG.width / 2 - width / 2;
+					y = FlxG.height / 2 - height / 2 - 20;
+				}
+				else
+				{
+					Reg.scores[0]++;
+		    		FlxG.camera.flash(FlxColor.RED, 0.05);
+				}
 			}
 
 			FlxG.sound.play(Reg.reboundSounds[FlxRandom.intRanged(0, Reg.reboundSounds.length - 1)]);

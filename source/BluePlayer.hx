@@ -1,26 +1,26 @@
 package;
 
-import flixel.group.FlxGroup;
 import flixel.FlxSprite;
+import flixel.group.FlxGroup;
 import flixel.FlxObject;
 import flixel.FlxG;
 import flixel.util.FlxColor;
 import flixel.util.FlxMath;
+import flixel.util.FlxRandom;
 import flixel.util.FlxTimer;
 
-import Math;
-
-class Player extends FlxGroup
+class BluePlayer extends FlxGroup
 {
 	private static inline var MOVE_SPEED:Float = 400;
 	private static inline var ATTACK_DURATION:Float = 0.3;
 	private static inline var ATTACK_FACTOR:Float = 3;
-	
+
 	public var body:FlxSprite;
 	public var attackArea:FlxObject;
-	var _attackTimer:FlxTimer = new FlxTimer();
-	var _isAttacking:Bool = false;
-	var _hasAttackOverlaped:Bool = false;
+
+	var _attackTimer = new FlxTimer();
+	var _isAttacking = false;
+	var _hasAttackOverlaped = false;
 	var _attackDirection:Int;
 
 	public var ball:Ball;
@@ -35,15 +35,16 @@ class Player extends FlxGroup
 		body.loadGraphic("assets/images/players.png", true, 80, 80);
 		body.width = 15;
 		body.height = 74;
-		body.offset.set(18, 6);
+		body.offset.set(47, 6);
+		body.flipX = true;
 
-		body.animation.add("idle", [0]);
-		body.animation.add("running", [0, 1], 8, true);
-		body.animation.add("swinging", [2, 3, 4], 10);
+		body.animation.add("idle", [5]);
+		body.animation.add("running", [5, 6], 8, true);
+		body.animation.add("swinging", [7, 8, 9], 10);
 
 		add(body);
 
-		attackArea = new FlxObject(x + 16, y);
+		attackArea = new FlxObject(x - 50, y);
 		attackArea.width = 50;
 		attackArea.height = 74;
 		attackArea.solid = false;
@@ -58,29 +59,26 @@ class Player extends FlxGroup
 
 		if(!_isAttacking)
 	    {
-	    	if(FlxG.keys.pressed.UP)
+	    	if(FlxG.keys.pressed.O)
     	    	body.velocity.y = attackArea.velocity.y = -MOVE_SPEED;
-    	    else if(FlxG.keys.pressed.DOWN)
+    	    else if(FlxG.keys.pressed.L)
     	    	body.velocity.y = attackArea.velocity.y = MOVE_SPEED;
     	}
 
 		body.animation.play("idle");
 
-    	if(body.velocity.y != 0)
+		if(body.velocity.y != 0)
 			body.animation.play("running");
 
-	    if(FlxG.keys.pressed.A || FlxG.keys.pressed.Z)
-	
-
-	    if((FlxG.keys.justPressed.A || FlxG.keys.justPressed.Z) && !_isAttacking)
+	    if((FlxG.keys.justPressed.I || FlxG.keys.justPressed.K) && !_isAttacking)
 	    {
 	    	_isAttacking = true;
 	    	_hasAttackOverlaped = false;
 	    	_attackTimer.start(ATTACK_DURATION, onAttackEnds, 1);
 
-	    	if(FlxG.keys.justPressed.A)
+	    	if(FlxG.keys.justPressed.I)
 	    		_attackDirection = FlxObject.UP;
-	    	else if(FlxG.keys.justPressed.Z)
+	    	else if(FlxG.keys.justPressed.K)
 	    		_attackDirection = FlxObject.DOWN;
 	    }
 
@@ -98,9 +96,9 @@ class Player extends FlxGroup
 				if(_attackDirection == FlxObject.DOWN && ball.velocity.y < 0 ) 
 					ball.reboundVertically();
 
-				if(ball.velocity.x < 0)
+				if(ball.velocity.x > 0)
 				{
-					var attackDistance = ball.x - attackArea.x;
+					var attackDistance = (attackArea.x + attackArea.width) - (ball.x + ball.width);
 					var attackPower = Math.round(ATTACK_FACTOR * (1 - attackDistance / attackArea.width));
 					attackPower = Std.int(FlxMath.bound(attackPower, 1, ATTACK_FACTOR));
 
@@ -112,10 +110,10 @@ class Player extends FlxGroup
 
 					ball.reboundHorizontally(attackPower);
 				}
+
+				Signals.ballHitSignal.dispatch(ball);
 	    	}
 	    }
-
-	    // FlxG.collide(this, ball);
 
 	    super.update();
 		
@@ -123,7 +121,7 @@ class Player extends FlxGroup
 		attackArea.y = FlxMath.bound(attackArea.y, 0, FlxG.height - attackArea.height);
 	}
 
-	public function onAttackEnds(timer:FlxTimer)
+	private function onAttackEnds(timer:FlxTimer)
 	{
 	    _isAttacking = false;
 	}
