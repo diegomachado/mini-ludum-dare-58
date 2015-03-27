@@ -2,6 +2,7 @@ package;
 
 import flixel.FlxSprite;
 import flixel.group.FlxGroup;
+import flixel.FlxObject;
 import flixel.FlxG;
 import flixel.util.FlxColor;
 import flixel.util.FlxMath;
@@ -11,13 +12,13 @@ import flixel.util.FlxTimer;
 class Enemy extends FlxGroup
 {
 	private static inline var MOVE_SPEED:Float = 400;
-	private static inline var ATTACK_DURATION:Float = 0.2;
-	private static inline var REACTION_DISTANCE:Float = 0.35;
+	private static inline var ATTACK_DURATION:Float = 0.3;
+	private static inline var REACTION_DISTANCE:Float = 0.45;
 
 	private var _attackPowerChances:Array<Float> = [5, 50, 40, 5];
 	
 	public var body:FlxSprite;
-	public var attackArea:FlxSprite;
+	public var attackArea:FlxObject;
 
 	var _attackTimer = new FlxTimer();
 	var _isAttacking = false;
@@ -31,15 +32,24 @@ class Enemy extends FlxGroup
 		super();
 
 		body = new FlxSprite(x, y);
-		body.makeGraphic(20, 40, FlxColor.RED);
 		body.immovable = true;
+
+		body.loadGraphic("assets/images/players.png", true, 80, 80);
+		body.width = 15;
+		body.height = 74;
+		body.offset.set(47, 6);
+		body.flipX = true;
+
+		body.animation.add("idle", [5]);
+		body.animation.add("running", [5, 6], 8, true);
+		body.animation.add("swinging", [7, 8, 9], 10);
+
 		add(body);
 
-		attackArea = new FlxSprite(x - 40, y);
-		attackArea.makeGraphic(40, 40, FlxColor.RED);
+		attackArea = new FlxObject(x - 50, y);
+		attackArea.width = 50;
+		attackArea.height = 74;
 		attackArea.solid = false;
-		attackArea.visible = false;
-		attackArea.alpha = 0.8;
 		add(attackArea);
 
 		this.ball = ball;
@@ -49,46 +59,52 @@ class Enemy extends FlxGroup
 	{
 		body.velocity.y = attackArea.velocity.y = 0;
 
-		if(ball.x >= FlxG.width * (1 - REACTION_DISTANCE) && ball.velocity.x > 0)
-		{
-			if (ball.y > body.y)
-			{
-				body.velocity.y = MOVE_SPEED;
-				attackArea.velocity.y = MOVE_SPEED;
-			}
-			else if (ball.y < body.y)
-			{
-				body.velocity.y = -MOVE_SPEED;
-				attackArea.velocity.y = -MOVE_SPEED;
-			}
-		}
-
 		if(!_isAttacking)
 		{
-			if(ball.velocity.x > 0)
+			if(ball.x >= FlxG.width * (1 - REACTION_DISTANCE) && ball.velocity.x > 0)
 			{
-				if(attackArea.overlaps(ball) && !_hasAttackOverlaped)
-				{
-	    			_isAttacking = true;
-			    	_attackTimer.start(ATTACK_DURATION, onAttackEnds, 1);
-
-			    	var attackPower = FlxRandom.weightedPick(_attackPowerChances);
-			    	var reboundVerticallyChance = FlxRandom.chanceRoll(50);
-
-			    	if(attackPower != 0 )
-			    	{
-						attackArea.visible = true;
-
-				    	if(reboundVerticallyChance) 
-				    		ball.reboundVertically();
-				    	
-				    	ball.reboundHorizontally(attackPower);
-			    	}
-				}
+				if (ball.y > body.y)
+					body.velocity.y = attackArea.velocity.y = MOVE_SPEED;
+				else if (ball.y < body.y)
+					body.velocity.y = attackArea.velocity.y = -MOVE_SPEED;
 			}
 		}
 
-		FlxG.collide(this, ball);
+		body.animation.play("idle");
+
+    	if(body.velocity.y != 0)
+			body.animation.play("running");
+
+		if(_isAttacking)
+			body.animation.play("swinging");
+
+		if(!_isAttacking && ball.velocity.x > 0)
+		{
+			if(attackArea.overlaps(ball) && !_hasAttackOverlaped)
+			{
+    			_isAttacking = true;
+		    	_attackTimer.start(ATTACK_DURATION, onAttackEnds, 1);
+
+		    	var attackPower = FlxRandom.weightedPick(_attackPowerChances);
+		    	var reboundVerticallyChance = FlxRandom.chanceRoll(50);
+
+		    	if(attackPower != 0)
+		    	{
+		    		FlxG.camera.shake(0.0015 * attackPower, 0.2);
+		    		FlxG.sound.play(Reg.hitSounds[attackPower - 1]);
+
+		    		if(attackPower == 3)
+	    				FlxG.camera.flash(FlxColor.WHITE, 0.1);
+	    			
+			    	if(reboundVerticallyChance) 
+			    		ball.reboundVertically();
+			    	
+			    	ball.reboundHorizontally(attackPower);
+		    	}
+			}
+		}
+
+		// FlxG.collide(this, ball);
 
 	    super.update();
 		
@@ -99,7 +115,6 @@ class Enemy extends FlxGroup
 	private function onAttackEnds(timer:FlxTimer)
 	{
 	    _isAttacking = false;
-	    attackArea.visible = false;
 	}
 
 	public override function destroy()

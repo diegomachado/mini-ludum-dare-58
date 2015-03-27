@@ -8,7 +8,7 @@ import flixel.util.FlxRandom;
 
 import Math;
 
-class StaticObstacle extends FlxSprite
+class Manhole extends FlxSprite
 {
 	private static inline var VISIBLE_DURATION:Float = 3;
 	private static inline var VISIBLE_DELAY_MIN:Float = 3;
@@ -18,22 +18,32 @@ class StaticObstacle extends FlxSprite
 	var _delayTimer = new FlxTimer();
 	var _delay:Float;
 	var _isDelaying = false;
+	var _isOpen = false;
 
 	public function new()
 	{
 		super(0, 0);
-
-		makeGraphic(20, 20, FlxColor.WHITE);
 		immovable = true;
-		solid = visible = false;
-		centerOrigin();
+		solid = _isOpen = false;
+
+		loadGraphic("assets/images/manhole.png", true, 74, 74);
+		animation.add("closed", [0]);
+		animation.add("open", [1, 2], 1, true);
+
+		offset.set(15, 28);
+		width = height = 44;
 
 		_delay = FlxRandom.floatRanged(VISIBLE_DELAY_MIN, VISIBLE_DELAY_MAX);
 	}
 
 	public override function update()
 	{
-		if(!_isDelaying && !visible)
+		if(_isDelaying)
+			animation.play("closed");
+		else
+			animation.play("open");
+
+		if(!_isDelaying && !_isOpen)
 		{
 			_delayTimer.start(_delay, goVisible, 1);
 			_isDelaying = true;
@@ -45,13 +55,13 @@ class StaticObstacle extends FlxSprite
 	public function goVisible(timer:FlxTimer)
 	{
 		_isDelaying = false;
-		solid = visible = true;
+		solid = _isOpen = true;
 		_visibleTimer.start(VISIBLE_DURATION, goInvisible, 1);
 	}
 
 	public function goInvisible(timer:FlxTimer)
 	{
-		solid = visible = false;	
+		solid = _isOpen = false;	
 		_delay = FlxRandom.floatRanged(VISIBLE_DELAY_MIN, VISIBLE_DELAY_MAX);
 	}
 

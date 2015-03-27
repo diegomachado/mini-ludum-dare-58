@@ -9,19 +9,16 @@ import flixel.util.FlxSave;
  */
 class Reg
 {
-	/**
-	 * Generic scores Array that can be used for cross-state stuff.
-	 * Example usage: Storing the scores for level.
-	 */
+	public static var scoreBoardFont = "assets/data/ozone.ttf";
+
+	public static var hitSounds:Array<String> = ["assets/sounds/hit1.wav",
+												 "assets/sounds/hit2.wav",
+												 "assets/sounds/hit3.wav"];
+
+	public static var reboundSounds:Array<String> = ["assets/sounds/rebound1.wav",
+												     "assets/sounds/rebound2.wav",
+												 	 "assets/sounds/rebound3.wav",
+												 	 "assets/sounds/rebound4.wav"];
+
 	public static var scores:Array<Int> = [0, 0];
-	/**
-	 * Generic score variable that can be used for cross-state stuff.
-	 * Example usage: Storing the current score.
-	 */
-	public static var score:Int = 0;
-	/**
-	 * Generic bucket for storing different FlxSaves.
-	 * Especially useful for setting up multiple save slots.
-	 */
-	public static var saves:Array<FlxSave> = [];
 }

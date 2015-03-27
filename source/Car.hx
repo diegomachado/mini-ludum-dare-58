@@ -2,6 +2,7 @@ package;
 
 import flixel.FlxSprite;
 import flixel.FlxG;
+import flixel.FlxObject;
 import flixel.util.FlxColor;
 import flixel.util.FlxTimer;
 import flixel.util.FlxRandom;
@@ -10,7 +11,7 @@ import flixel.tweens.FlxTween;
 
 import Math;
 
-class DynamicObstacle extends FlxSprite
+class Car extends FlxSprite
 {
 	private static inline var TWEEN_MIN:Float = 1;
 	private static inline var TWEEN_MAX:Float = 2;
@@ -26,13 +27,34 @@ class DynamicObstacle extends FlxSprite
 	var _delayTimer = new FlxTimer();
 	var _isDelaying = false;
 	
-	public function new()
+	public function new(direction:Int, color:Int)
 	{
 		super(0, 0);
-
-		makeGraphic(50, 70, FlxColor.WHITE);
 		immovable = true;
-		centerOrigin();
+		allowCollisions = FlxObject.WALL;
+
+		loadGraphic("assets/images/cars.png", true, 118, 195);
+		animation.add("green", [0]);
+		animation.add("brown", [1]);
+		
+		if(direction == FlxObject.UP)
+		{
+			x = 541;
+			y = startY = FlxG.height + height;
+	    	endY = -height;
+		}
+		else if(direction == FlxObject.DOWN)
+		{
+			x = 343;
+			y = startY = -height;
+	    	endY = FlxG.height + height;
+	    	flipY = true;
+		}
+
+		if(color == 1)
+			animation.play("green");
+		else if(color == 2)
+			animation.play("brown");
 
 		_tweenTime = FlxRandom.floatRanged(TWEEN_MIN, TWEEN_MAX);
 		_delay = FlxRandom.floatRanged(DELAY_MIN, DELAY_MAX);
@@ -57,6 +79,7 @@ class DynamicObstacle extends FlxSprite
 	{
 		_isDelaying = false;
 
+		FlxG.sound.play("assets/sounds/car.wav");
 		FlxTween.tween(this, {y: endY}, _tweenTime, {complete: resetPosition});
 
 		_delay = FlxRandom.floatRanged(DELAY_MIN, DELAY_MAX);
